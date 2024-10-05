@@ -1,0 +1,195 @@
+<!doctype html>
+<!--
+Title: Unreadable Clock (Readable)
+Author: Nathan Cavalli
+Date Started: 27/6/2019
+-->
+
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="./styles/styles.css">
+		<title>The Unreadable Clock (12-Hour)</title>
+	</head>
+
+	<body onload="initClock();">
+		<canvas id="canvas" width="500" height="500" style="background-color:#333"></canvas>
+		<!-- <p><strong>Execution Time: </strong><span id="execOutput"/></p> -->
+		<script>
+			const canvas = document.getElementById("canvas");
+			const ctx = canvas.getContext("2d");
+			var radius = canvas.height / 2;
+			var clockradius = radius * 0.90;
+			ctx.translate(radius, radius);
+			setInterval(drawClock, 1000);
+
+			var minsec = [];
+			var hour = [];
+
+			function initClock(){
+				//Populate Arrays
+				for (i = 0; i < 60; i++)
+					{minsec[i] = i;}
+				for (i = 0; i < 12; i++)
+					{hour[i] = i+1;}
+				shuffleArray();
+				// drawFace();
+				// drawNumbers();
+				// drawTime();
+				drawClock();
+			}
+
+			function shuffleArray(){
+				var minsecCount = minsec.length;
+				var hourCount = hour.length;
+				var rand;
+				var tmp;
+
+				//Minsec Array
+				while (minsecCount > 0){
+					rand = Math.floor(Math.random() * minsecCount--);
+					tmp = minsec[minsecCount];
+					minsec[minsecCount] = minsec[rand];
+					minsec[rand] = tmp;
+				}
+				//Hour Array
+				while (hourCount > 0){
+					rand = Math.floor(Math.random() * hourCount--);
+					tmp = hour[hourCount];
+					hour[hourCount] = hour[rand];
+					hour[rand] = tmp;
+				}
+			}
+
+			function drawClock(){
+				//Performance Test Start
+				var t0 = performance.now();
+				drawFace();
+				drawNumbers();
+				drawTime();
+				//Performance Test End
+				var t1 = performance.now();
+				// document.getElementById("execOutput").innerHTML = (t1-t0) + "ms";
+			}
+
+			function drawFace(){
+				ctx.beginPath();
+				ctx.arc(0, 0, clockradius, 0, 2 * Math.PI);
+				ctx.fillStyle = 'white';
+				ctx.fill();
+				ctx.closePath();
+
+				var grad;
+				grad = ctx.createRadialGradient(0,0, clockradius*0.93, 0, 0, clockradius * 1.05);
+				grad.addColorStop(0, '#555');
+				grad.addColorStop(0.5, 'white');
+				grad.addColorStop(1, '#333');
+				ctx.strokeStyle = grad;
+				ctx.lineWidth = clockradius * 0.1;
+				ctx.stroke();
+				ctx.closePath();
+			}
+
+			function drawNumbers(){
+				var ang;
+
+				//Outer Minutes/Seconds
+				ctx.font = clockradius*0.055 + "px Comic Sans MS";
+				ctx.fillStyle = "#333";
+				ctx.textBaseline="middle";
+				ctx.textAlign="center";
+				for(i = 0; i < minsec.length; i++){
+					ang = i * Math.PI/(minsec.length/2);
+					ctx.rotate(ang);
+					ctx.translate(0, -clockradius*0.875);
+					ctx.rotate(-ang);
+					ctx.fillText(minsec[i].toString(), 0, 0);
+					ctx.rotate(ang);
+					ctx.translate(0, clockradius*0.875);
+					ctx.rotate(-ang);
+				}
+
+				//Separating Circle
+				ctx.beginPath();
+				ctx.arc(0, 0, clockradius*0.8, 0, 2*Math.PI);
+				ctx.lineWidth = 1;
+				ctx.stroke();
+
+				//Inner Hours
+				ctx.font = clockradius*0.135 + "px Comic Sans MS";
+				ctx.fillStyle = "#333";
+				ctx.textBaseline="middle";
+				ctx.textAlign="center";
+				for(i = 1; i <= hour.length; i++){
+					ang = i * Math.PI/(hour.length/2);
+					ctx.rotate(ang);
+					ctx.translate(0, -clockradius*0.68);
+					ctx.rotate(-ang);
+					ctx.fillText(hour[i-1].toString(), 0, 0);
+					ctx.rotate(ang);
+					ctx.translate(0, clockradius*0.68);
+					ctx.rotate(-ang);
+				}
+			}
+
+			function drawTime(){
+				var now = new Date();
+				var realhour = now.getHours();
+				var realminute = now.getMinutes();
+				var realsecond = now.getSeconds();
+				var tmp;
+
+				//hours
+				for (i = 1; i <= hour.length; i++){
+					if (hour[i-1] == realhour%12){
+						tmp = (i * Math.PI/(hour.length/2));
+						drawHand(ctx, tmp, clockradius*0.55, clockradius*0.07, color = "#333");
+						break;
+					}
+				}
+				if (realhour%12 == 0){
+				//Not sure if this is the best way to implement this
+					for (i = 1; i <= hour.length; i++){
+						if (hour[i-1] == 12){
+							tmp = (i * Math.PI/(hour.length/2));
+							drawHand(ctx, tmp, clockradius*0.55, clockradius*0.07, color = "#333");
+							break;
+						}
+					}
+				}
+				//minutes
+				for (i = 0; i < minsec.length; i++){
+					if (minsec[i] == realminute){
+						tmp = (i * Math.PI/(minsec.length/2));
+						drawHand(ctx, tmp, clockradius*0.8, clockradius*0.07, color = "grey");
+						break;
+					}
+				}
+				//seconds
+				for (i = 0; i < minsec.length; i++){
+					if (minsec[i] == realsecond){
+						tmp = (i * Math.PI/(minsec.length/2));
+						drawHand(ctx, tmp, clockradius*0.83, clockradius*0.03, color = "red");
+						break;
+					}
+				}
+			}
+
+			function drawHand(ctx, pos, length, width, color){
+				ctx.beginPath();
+				ctx.lineWidth = width;
+				ctx.lineCap = "round";
+				ctx.moveTo(0,0);
+				ctx.rotate(pos);
+				ctx.lineTo(0, -length);
+				ctx.strokeStyle = color;
+				ctx.stroke();
+				ctx.rotate(-pos);
+				ctx.beginPath();
+				ctx.arc(0, 0, radius*0.05, 0, 2*Math.PI);
+				ctx.fillStyle = 'silver';
+				ctx.fill();
+			}
+		</script>
+	</body>
+</html>
