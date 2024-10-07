@@ -140,19 +140,19 @@ Date Started: 27/6/2019
 				var realsecond = now.getSeconds();
 				var tmp;
 
-				//hours
-				for (i = 0; i < hour.length; i++){
-					if (hour[i] == realhour){
-						tmp = (i * Math.PI/(hour.length/2));
-						drawHand(ctx, tmp, clockradius*0.55, clockradius*0.07, color = "#333");
-						break;
-					}
-				}
 				//minutes
 				for (i = 0; i < minsec.length; i++){
 					if (minsec[i] == realminute){
 						tmp = (i * Math.PI/(minsec.length/2));
 						drawHand(ctx, tmp, clockradius*0.8, clockradius*0.07, color = "grey");
+						break;
+					}
+				}
+				//hours
+				for (i = 0; i < hour.length; i++){
+					if (hour[i] == realhour){
+						tmp = (i * Math.PI/(hour.length/2));
+						drawHand(ctx, tmp, clockradius*0.55, clockradius*0.07, color = "#333");
 						break;
 					}
 				}
